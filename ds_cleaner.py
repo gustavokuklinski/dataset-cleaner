@@ -8,8 +8,8 @@ folder_of_movies = 'movies-tv'
 output_folder = 'output'
 os.makedirs(output_folder, exist_ok=True)
 
-CHUNK_SIZE = 2048  # number of words per chunk
-STRIDE = 512       # overlap in words
+CHUNK_SIZE = 1020  # number of words per chunk
+STRIDE = 256       # overlap in words
 
 def split_into_chunks(text, chunk_size=CHUNK_SIZE, stride=STRIDE):
     words = text.split()
