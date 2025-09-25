@@ -2,56 +2,59 @@ import os
 import csv
 import re
 
-def create_csv(folder_path, output_filename):
-    """
-    Creates a CSV file with book titles and content from a folder of TXT files.
-    The content is wrapped in <BOS> and <EOS> tags, and filenames are formatted as titles.
+# --- CONFIG ---
+folder_of_books = 'books'
+folder_of_movies = 'movies-tv'
+output_folder = 'output'
+os.makedirs(output_folder, exist_ok=True)
 
-    Args:
-        folder_path (str): The path to the folder containing the TXT files.
-        output_filename (str): The name of the output CSV file.
-    """
-    output_path = os.path.join(os.getcwd(), output_filename)
+CHUNK_SIZE = 2048  # number of words per chunk
+STRIDE = 512       # overlap in words
+
+def split_into_chunks(text, chunk_size=CHUNK_SIZE, stride=STRIDE):
+    words = text.split()
+    chunks = []
+    step = chunk_size - stride
+    for start in range(0, len(words), step):
+        chunk_words = words[start:start + chunk_size]
+        if chunk_words:
+            chunks.append(' '.join(chunk_words))
+        if start + chunk_size >= len(words):
+            break
+    return chunks
+
+def create_csv_chunked_local(folder_path, output_filename):
+    output_path = os.path.join(output_folder, output_filename)
 
     with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
         csv_writer = csv.writer(csvfile, quoting=csv.QUOTE_MINIMAL)
-        csv_writer.writerow(['title', 'content'])
+        csv_writer.writerow(['title', 'text'])
 
         for filename in os.listdir(folder_path):
-            if filename.endswith(".txt"):
-                file_path = os.path.join(folder_path, filename)
+            if not filename.endswith(".txt"):
+                continue
 
-                # Format the title: replace hyphens with spaces and capitalize each word
-                title = os.path.splitext(filename)[0].replace('-', ' ').title()
+            file_path = os.path.join(folder_path, filename)
+            title = os.path.splitext(filename)[0].replace('-', ' ').title()
 
-                try:
-                    with open(file_path, 'r', encoding='utf-8') as txtfile:
-                        content = txtfile.read()
+            try:
+                with open(file_path, 'r', encoding='utf-8') as txtfile:
+                    content = txtfile.read()
+                    # clean text
+                    content_no_tabs = content.replace('\t', ' ')
+                    content_cleaned = re.sub(r' {2,}', ' ', content_no_tabs).strip()
 
-                        # Remove extra spaces (more than one in a row) from the content
-                        content_cleaned = re.sub(r' {2,}', ' ', content)
+                    # split into chunks
+                    chunks = split_into_chunks(content_cleaned, CHUNK_SIZE, STRIDE)
+                    for chunk in chunks:
+                        csv_writer.writerow([title, chunk])
 
-                        # Wrap content with <BOS> and <EOS> tags
-                        content_wrapped = f"<|im_start|>{content_cleaned}<|im_end|>"
+            except UnicodeDecodeError:
+                print(f"Skipping {filename} due to a UnicodeDecodeError. Check encoding.")
+            except Exception as e:
+                print(f"Error with file {filename}: {e}")
 
-                        # Replace newlines with the escaped character `\n`
-                        content_escaped = content_wrapped.replace('\n', '\\n')
+    print(f"Successfully created '{output_filename}' with chunked data.")
 
-                        # Add <TITLE> tag to the title
-                        title_formatted = f"<|im_start|>{title}<|im_end|>"
-
-                        # Write the row to the CSV file
-                        csv_writer.writerow([title_formatted, content_escaped])
-
-                except UnicodeDecodeError:
-                    print(f"Skipping {filename} due to a UnicodeDecodeError. Please check the file's encoding.")
-                except Exception as e:
-                    print(f"An error occurred with file {filename}: {e}")
-
-    print(f"Successfully created '{output_filename}' with book data.")
-
-# --- Usage Example ---
-folder_of_books = 'books'
-folder_of_movies = 'movies-tv'
-create_csv(folder_of_books, f"output/{folder_of_books}.csv")
-create_csv(folder_of_movies, f"output/{folder_of_movies}.csv")
+create_csv_chunked_local(folder_of_books, f"{folder_of_books}.csv")
+create_csv_chunked_local(folder_of_movies, f"{folder_of_movies}.csv")
