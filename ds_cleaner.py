@@ -141,4 +141,4 @@ def create_csv(folder_path, output_filename):
     print(f"Successfully created '{output_filename}' character-chunked data.")
 
 # --- Execution ---
-create_csv(folder_of_books, "books_2048_char_chunks.csv")
+create_csv(folder_of_books, "books.csv")

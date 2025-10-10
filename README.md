@@ -2,10 +2,8 @@
 
 Clean up .txt for raw corpus text LLM training.
 
-**Under cleaning:**
-
-
 **Dataset cleaned books:**
+- 0-AEON - Aeon AI persona mithology
 - Dialogues - Seneca
 - The Great Gatsby - F. Scott Fitzgerald
 - The Gambler - Fyodor Dostoyevsky
@@ -50,3 +48,8 @@ Clean up .txt for raw corpus text LLM training.
 - Harry Potter: The Deathly Hallows - Vol. 7 - J.K. Rowling
 - War and Piece - Leo Tolstoy
 - Anna Karenina - Leo Tolstoy
+- Sapiens: A Brief History of Humankind - Yuval Noah Harari
+- Ulysses - James Joyce
+- Atlas Shrugged - Ayn Rand
+- Nexus - Yuval Noah Harari
+- Leonardo da Vinci - Walter Isaacson

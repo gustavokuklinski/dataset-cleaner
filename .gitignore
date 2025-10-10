@@ -1,2 +1,3 @@
 books/*.txt
+!books/0-AEON.txt
 output/*.csv
